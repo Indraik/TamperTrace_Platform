@@ -79,8 +79,8 @@ TamperTraceProject/
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/Indraik/TamperTrace.git
-cd TamperTrace
+git clone https://github.com/Indraik/TamperTrace_Platform.git
+cd TamperTrace_Platform
 ```
 
 ### 2. Set Up Virtual Environment & Dependencies
