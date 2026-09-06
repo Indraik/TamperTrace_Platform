@@ -79,7 +79,7 @@ TamperTraceProject/
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-username/TamperTrace.git
+git clone https://github.com/Indraik/TamperTrace.git
 cd TamperTrace
 ```
 
