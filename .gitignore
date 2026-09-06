@@ -1,0 +1,32 @@
+# Python virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# Environment variables & secrets (CRITICAL)
+.env
+.env.local
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Runtime screenshots and diff archives (keep empty folders)
+static/screenshots/*.png
+!static/screenshots/.gitkeep
+static/archive/*.png
+!static/archive/.gitkeep
+
+# IDE and Editor configurations
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

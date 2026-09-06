@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add New URL | TamperTrace</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+   /* 
+ * Futuristic URL Addition Interface
+ * Cyber Security Portal with Neon Effects
+ */
+
+body {
+    background: linear-gradient(135deg, #0a0a0f 0%, #0F172A 50%, #1a162f 100%);
+    color: #e2e8f0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Animated Background */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 30%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+        linear-gradient(45deg, transparent 49%, rgba(59, 130, 246, 0.05) 50%, transparent 51%),
+        linear-gradient(-45deg, transparent 49%, rgba(139, 92, 246, 0.05) 50%, transparent 51%);
+    background-size: 300px 300px;
+    pointer-events: none;
+    z-index: -1;
+    animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove {
+    0% { background-position: 0 0; }
+    100% { background-position: 300px 300px; }
+}
+
+/* Main Card - Glassmorphism Portal */
+.card {
+    background: rgba(30, 41, 59, 0.4) !important;
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 25px;
+    padding: 40px;
+    width: 500px;
+    margin: 80px auto;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.4),
+        0 0 80px rgba(59, 130, 246, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, 
+        #00f7ff, #3b82f6, #8b5cf6, #ec4899, 
+        #3b82f6, #00f7ff);
+    background-size: 400% 400%;
+    border-radius: 27px;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    animation: portalGlow 8s ease infinite;
+}
+
+.card:hover::before {
+    opacity: 0.7;
+}
+
+.card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 
+        0 35px 70px rgba(0, 0, 0, 0.5),
+        0 0 120px rgba(59, 130, 246, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    border-color: rgba(59, 130, 246, 0.5);
+}
+
+@keyframes portalGlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* Title Styling */
+.card h3 {
+    background: linear-gradient(90deg, #00f7ff 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 800;
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 30px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-shadow: 0 0 30px rgba(0, 247, 255, 0.5);
+    position: relative;
+    padding-bottom: 15px;
+}
+
+.card h3::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #00f7ff, #8b5cf6, transparent);
+    border-radius: 3px;
+    box-shadow: 0 0 20px rgba(0, 247, 255, 0.5);
+}
+
+/* Form Labels */
+.form-label {
+    color: #00f7ff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px rgba(0, 247, 255, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-label::before {
+    font-size: 1.3rem;
+    filter: drop-shadow(0 0 5px currentColor);
+}
+
+/* Form Inputs - Cyber Style */
+.form-control {
+    background: rgba(15, 23, 42, 0.7) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid rgba(59, 130, 246, 0.4);
+    border-radius: 12px;
+    color: #e2e8f0;
+    padding: 14px 20px;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 
+        inset 0 2px 10px rgba(0, 0, 0, 0.2),
+        0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.form-control:focus {
+    background: rgba(15, 23, 42, 0.9) !important;
+    border-color: #3b82f6;
+    box-shadow: 
+        0 0 0 4px rgba(59, 130, 246, 0.25),
+        0 0 40px rgba(59, 130, 246, 0.3),
+        inset 0 2px 10px rgba(0, 0, 0, 0.3);
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.form-control::placeholder {
+    color: rgba(148, 163, 184, 0.7);
+    font-style: italic;
+}
+
+/* Icon Effects on Inputs */
+input[name="url"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2300f7ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 24px;
+    padding-right: 50px;
+}
+
+input[name="admin_email"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2300f7ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z'%3E%3C/path%3E%3Cpolyline points='22,6 12,13 2,6'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 24px;
+    padding-right: 50px;
+}
+
+input[name="phone"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2300f7ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 24px;
+    padding-right: 50px;
+}
+
+/* Primary Button - Add URL */
+.btn-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 15px;
+    font-weight: 800;
+    font-size: 1.2rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: white;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 
+        0 10px 30px rgba(59, 130, 246, 0.4),
+        0 0 20px rgba(59, 130, 246, 0.3);
+    margin-top: 10px;
+}
+
+.btn-primary::before {
+    content: '➕';
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.5rem;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    transform: translateY(-3px);
+    box-shadow: 
+        0 15px 40px rgba(59, 130, 246, 0.6),
+        0 0 30px rgba(59, 130, 246, 0.5);
+}
+
+.btn-primary:active {
+    transform: translateY(-1px);
+}
+
+/* Secondary Button - Back */
+.btn-secondary {
+    background: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid rgba(59, 130, 246, 0.3);
+    border-radius: 12px;
+    padding: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #94a3b8;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-secondary::before {
+    content: '⬅️';
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.btn-secondary:hover {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.5);
+    color: #e2e8f0;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Form Group Spacing */
+.mb-3 {
+    margin-bottom: 25px !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .card {
+        width: 90%;
+        margin: 40px auto;
+        padding: 30px 20px;
+    }
+    
+    .card h3 {
+        font-size: 1.8rem;
+    }
+    
+    .btn-primary, .btn-secondary {
+        font-size: 1.1rem;
+        padding: 12px;
+    }
+}
+
+/* Loading Animation for Button */
+@keyframes loadingPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.btn-primary.loading {
+    animation: loadingPulse 1.5s infinite;
+}
+
+/* Form Validation Effects */
+.form-control:invalid:not(:focus):not(:placeholder-shown) {
+    border-color: rgba(239, 68, 68, 0.6);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+.form-control:valid:not(:focus):not(:placeholder-shown) {
+    border-color: rgba(34, 197, 94, 0.6);
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h3 class="text-info mb-4 text-center">➕ Add Website for Monitoring</h3>
+    <form action="/add_url" method="POST">
+      <div class="mb-3">
+        <label class="form-label">🌐 Website URL:</label>
+        <input type="url" name="url" class="form-control" placeholder="https://example.com" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">📧 Admin Email:</label>
+        <input type="email" name="admin_email" class="form-control" placeholder="admin@example.com" required>
+        <br>
+        <input
+          type="text"
+          name="phone"
+          class="form-control"
+          placeholder="Admin Mobile (+91XXXXXXXXXX)"
+          required
+        >
+
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Add URL</button>
+      <a href="/" class="btn btn-secondary w-100 mt-3">⬅️ Back to Dashboard</a>
+    </form>
+  </div>
+</body>
+</html>

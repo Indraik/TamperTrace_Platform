@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>🛡️ TamperTrace Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* 
+ * Futuristic Security Dashboard Theme
+ * Glassmorphism + Neon Cyber Style
+ */
+
+        body {
+            background: linear-gradient(135deg, #0a0a0f 0%, #0F172A 50%, #1e1b3a 100%);
+            color: #e2e8f0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 30%, rgba(100, 80, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(255, 0, 128, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Dashboard Title */
+        .navbar {
+            background: rgba(15, 23, 42, 0.85) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+            box-shadow:
+                0 4px 30px rgba(0, 0, 0, 0.3),
+                0 0 40px rgba(59, 130, 246, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+        }
+
+        .navbar h2 {
+            background: linear-gradient(90deg, #00f7ff 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-shadow: 0 0 30px rgba(0, 247, 255, 0.5);
+            position: relative;
+        }
+
+        /*.navbar h2::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, #00f7ff, #8b5cf6);
+    border-radius: 2px;
+}*/
+
+        /* Glassmorphism Cards */
+        .card {
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 16px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            color: #e2e8f0;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg,
+                    transparent,
+                    rgba(59, 130, 246, 0.1),
+                    transparent);
+            transition: left 0.7s ease;
+        }
+
+        .card:hover::before {
+            left: 100%;
+        }
+
+        .card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow:
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                0 0 60px rgba(59, 130, 246, 0.25),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        /* Card Content Styling */
+        .card-title {
+            background: linear-gradient(90deg, #00f7ff 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .card-body {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Stat Cards Animation */
+        .col-md-3 .card {
+            animation: pulseGlow 3s infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            0% {
+                box-shadow:
+                    0 10px 30px rgba(0, 0, 0, 0.3),
+                    0 0 30px rgba(59, 130, 246, 0.1);
+            }
+
+            100% {
+                box-shadow:
+                    0 10px 30px rgba(0, 0, 0, 0.3),
+                    0 0 50px rgba(59, 130, 246, 0.25);
+            }
+        }
+
+        /* Status Badges - Neon Effects */
+        .status-badge {
+            font-weight: 700;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            box-shadow: 0 0 15px currentColor;
+            transition: all 0.3s ease;
+        }
+
+        .status-safe {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            border: 1px solid #22c55e;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+        }
+
+        .status-alert {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .status-normal {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border: 1px solid #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Threat Level Badges */
+        .threat-high {
+            background: rgba(220, 38, 38, 0.2);
+            color: #dc2626;
+            border: 1px solid #dc2626;
+            box-shadow: 0 0 25px rgba(220, 38, 38, 0.5);
+            animation: dangerPulse 2s infinite;
+        }
+
+        @keyframes dangerPulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 25px rgba(220, 38, 38, 0.5);
+            }
+
+            50% {
+                box-shadow: 0 0 40px rgba(220, 38, 38, 0.8);
+            }
+        }
+
+        .threat-medium {
+            background: rgba(234, 88, 12, 0.2);
+            color: #ea580c;
+            border: 1px solid #ea580c;
+            box-shadow: 0 0 20px rgba(234, 88, 12, 0.4);
+        }
+
+        .threat-low {
+            background: rgba(217, 119, 6, 0.2);
+            color: #d97706;
+            border: 1px solid #d97706;
+            box-shadow: 0 0 20px rgba(217, 119, 6, 0.4);
+        }
+
+        .threat-clean {
+            background: rgba(22, 163, 74, 0.2);
+            color: #16a34a;
+            border: 1px solid #16a34a;
+            box-shadow: 0 0 20px rgba(22, 163, 74, 0.4);
+        }
+
+        /* Buttons - Glowing Gradient Effects */
+        .btn {
+            border-radius: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: none;
+        }
+
+        .btn-outline-warning {
+            background: transparent;
+            color: #fbbf24;
+            border: 2px solid #fbbf24;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+        }
+
+        .btn-outline-warning:hover {
+            background: rgba(251, 191, 36, 0.1);
+            box-shadow: 0 0 30px rgba(251, 191, 36, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border: none;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+            box-shadow: 0 15px 40px rgba(59, 130, 246, 0.6);
+            transform: translateY(-3px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            border: none;
+            box-shadow: 0 10px 30px rgba(34, 197, 94, 0.4);
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            box-shadow: 0 15px 40px rgba(34, 197, 94, 0.6);
+            transform: translateY(-3px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border: none;
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            box-shadow: 0 15px 40px rgba(239, 68, 68, 0.6);
+            transform: translateY(-3px);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border: none;
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            box-shadow: 0 15px 40px rgba(245, 158, 11, 0.6);
+            transform: translateY(-3px);
+        }
+
+        /* Input Fields */
+        .form-control {
+            background: rgba(15, 23, 42, 0.6) !important;
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            color: #e2e8f0;
+            padding: 12px 20px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            background: rgba(15, 23, 42, 0.8) !important;
+            border-color: #3b82f6;
+            box-shadow:
+                0 0 0 3px rgba(59, 130, 246, 0.2),
+                inset 0 0 20px rgba(59, 130, 246, 0.1);
+            color: #e2e8f0;
+        }
+
+        .form-control::placeholder {
+            color: rgba(148, 163, 184, 0.7);
+        }
+
+        /* Flash Messages */
+        .flash-messages .alert {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            background: rgba(30, 41, 59, 0.9) !important;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            box-shadow:
+                0 10px 30px rgba(0, 0, 0, 0.3),
+                0 0 40px rgba(59, 130, 246, 0.2);
+            color: #e2e8f0;
+        }
+
+        .alert-success {
+            border-color: #22c55e;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 40px rgba(34, 197, 94, 0.2) !important;
+        }
+
+        .alert-danger {
+            border-color: #ef4444;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 40px rgba(239, 68, 68, 0.2) !important;
+        }
+
+        .alert-warning {
+            border-color: #f59e0b;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 40px rgba(245, 158, 11, 0.2) !important;
+        }
+
+        /* Table Styling */
+        .table-dark {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .table-dark thead th {
+            background: rgba(59, 130, 246, 0.2);
+            color: #00f7ff;
+            border-bottom: 2px solid rgba(59, 130, 246, 0.4);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .table-dark tbody tr {
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        .table-dark tbody tr:hover {
+            background: rgba(59, 130, 246, 0.1);
+            transform: translateX(5px);
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Small pie chart styling */
+        #statusChart {
+            max-height: 300px;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        /* Text Colors */
+        .text-info {
+            color: #00f7ff !important;
+            text-shadow: 0 0 20px rgba(0, 247, 255, 0.3);
+        }
+
+        .text-light-custom {
+            color: #f1f5f9 !important;
+        }
+
+        .text-muted-custom {
+            color: #94a3b8 !important;
+        }
+
+        /* Badges */
+        .badge {
+            font-weight: 700;
+            padding: 8px 16px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .bg-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .bg-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+        }
+
+        .bg-orange {
+            background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%) !important;
+            box-shadow: 0 0 20px rgba(234, 88, 12, 0.4);
+        }
+
+        .bg-success {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #3b82f6 0%, #8b5cf6 100%);
+            border-radius: 10px;
+            border: 2px solid rgba(15, 23, 42, 0.6);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #2563eb 0%, #7c3aed 100%);
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+
+            .card {
+                margin-bottom: 1rem;
+            }
+
+            .btn {
+                padding: 10px 20px;
+            }
+
+            #statusChart {
+                max-height: 250px;
+                max-width: 250px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div
+            class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'warning' if category == 'warning' else 'info' }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <nav class="navbar navbar-dark px-4 py-3">
+        <h2 class="m-0">🛡️ TamperTrace Monitoring Dashboard</h2>
+        <div>
+            <a href="/threats" class="btn btn-outline-warning me-2">🧠 Threat Intel</a>
+            <a href="/add_url" class="btn btn-primary">➕ Add New URL</a>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <!-- Scheduler Toggle -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="text-info mb-0">🔄 Monitoring Scheduler</h4>
+                        {% if settings.get('scheduler_enabled', True) %}
+                        <a href="/toggle_scheduler" class="btn btn-success">
+                            🟢 Scheduler RUNNING (Click to Stop)
+                        </a>
+                        {% else %}
+                        <a href="/toggle_scheduler" class="btn btn-danger">
+                            🔴 Scheduler STOPPED (Click to Start)
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manual Threat Scanner -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card p-4">
+                    <h4 class="text-info mb-3">🔍 Manual URL Threat Scanner</h4>
+                    <form action="/scan_url" method="post" class="d-flex gap-2">
+                        <input type="url" name="url" class="form-control" placeholder="https://example.com" required>
+                        <button type="submit" class="btn btn-warning">🚀 Scan URL</button>
+                    </form>
+                    <small class="text-muted-custom mt-2">Scan any URL with VirusTotal for malware, phishing, and
+                        threats (does not add to monitored list)</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center p-3">
+                    <h5 class="text-light-custom">🌐 Total Sites</h5>
+                    <h3 class="text-primary">{{ threat_stats.total }}</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center p-3">
+                    <h5 class="text-light-custom">✅ Safe</h5>
+                    <h3 class="text-success">{{ threat_stats.safe }}</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center p-3">
+                    <h5 class="text-light-custom">🚨 Defaced</h5>
+                    <h3 class="text-danger">{{ threat_stats.defaced }}</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center p-3">
+                    <h5 class="text-light-custom">⚠️ High Threat</h5>
+                    <h3 class="text-warning">{{ threat_stats.high_threat }}</h3>
+                </div>
+            </div>
+        </div>
+        <h4 class="text-info mb-4">🔍 Active Monitored Websites</h4>
+
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            {% for site in urls %}
+            <div class="col">
+                <div class="card p-3 site-card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ site.url }}</h5>
+                        <p><b>👤 Admin:</b> <span class="text-light-custom">{{ site.admin_email }}</span></p>
+                        <p><b>🕒 Last Checked:</b> <span class="text-light-custom">{{
+                                site.last_checked.strftime('%Y-%m-%d %H:%M') if site.last_checked else 'Never' }}</span>
+                        </p>
+
+                        <p><b>📊 Status:</b>
+                            {% if site.change_detected %}
+                            <span class="status-badge status-alert">⚠️ Defaced</span>
+                            {% else %}
+                            <span class="status-badge status-safe">✅ Safe</span>
+                            {% endif %}
+                        </p>
+
+                        <!-- <p><b>🧠 Threat Level:</b>
+                            {% set threat_level = site.get('threat_level', 'unknown') %}
+                            {% if threat_level == 'high' %}
+                                <span class="status-badge threat-high">🚨 HIGH</span>
+                            {% elif threat_level == 'medium' %}
+                                <span class="status-badge threat-medium">⚠️ MEDIUM</span>
+                            {% elif threat_level == 'low' %}
+                                <span class="status-badge threat-low">🔶 LOW</span>
+                            {% elif threat_level == 'clean' %}
+                                <span class="status-badge threat-clean">✅ CLEAN</span>
+                            {% else %}
+                                <span class="status-badge status-normal">❓ UNKNOWN</span>
+                            {% endif %}
+                        </p> -->
+
+                        <p><b>📝 Remark:</b> <span class="text-light-custom">{{ site.status or "Normal" }}</span></p>
+
+                        <div class="mt-3 d-flex gap-2">
+                            {% if site.change_detected %}
+                            <button class="btn btn-warning btn-sm" onclick="restoreSite('{{ site.url }}')">
+                                🔄 Restore Website
+                            </button>
+
+                            <a href="/approve_change?url={{ site.url }}" class="btn btn-success btn-sm">
+                                ✅ Mark Safe
+                            </a>
+                            {% endif %}
+
+                            <a href="/delete_url?url={{ site.url | urlencode }}" class="btn btn-outline-danger btn-sm"
+                                onclick="return confirm('Are you sure you want to delete this URL from monitoring?');">
+                                🗑️ Delete
+                            </a>
+                        </div>
+
+                        {% if site.get('vt_malicious') is not none %}
+                        <div class="mt-2 small">
+                            <b>VirusTotal:</b>
+                            <span class="text-danger">🚨 {{ site.vt_malicious }}</span> |
+                            <span class="text-warning">⚠️ {{ site.vt_suspicious }}</span> |
+                            <span class="text-success">✅ {{ site.get('vt_harmless', 0) }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Combined Recent Scans and Pie Chart Section -->
+        <div class="row mt-5">
+            <!-- Recent Scans on the LEFT (larger) -->
+            <div class="col-md-8">
+                {% if scan_history %}
+                <div class="card p-4 h-100">
+                    <h4 class="text-info mb-3">📊 Recent Threat Scans</h4>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="text-light-custom">URL</th>
+                                    <th class="text-light-custom">Malicious</th>
+                                    <th class="text-light-custom">Suspicious</th>
+                                    <th class="text-light-custom">Harmless</th>
+                                    <th class="text-light-custom">Threat Level</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for scan in scan_history %}
+                                <tr>
+                                    <td class="text-truncate text-light-custom" style="max-width: 200px;">{{ scan.url }}
+                                    </td>
+                                    <td class="text-danger">{{ scan.malicious }}</td>
+                                    <td class="text-warning">{{ scan.suspicious }}</td>
+                                    <td class="text-success">{{ scan.harmless }}</td>
+                                    <td>
+                                        {% set scan_threat = get_threat_level(scan) %}
+                                        {% if scan_threat == 'high' %}
+                                        <span class="badge bg-danger">HIGH</span>
+                                        {% elif scan_threat == 'medium' %}
+                                        <span class="badge bg-warning">MEDIUM</span>
+                                        {% elif scan_threat == 'low' %}
+                                        <span class="badge bg-orange">LOW</span>
+                                        {% else %}
+                                        <span class="badge bg-success">CLEAN</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Pie Chart on the RIGHT (smaller) -->
+            <div class="col-md-4">
+                <div class="card chart-container">
+                    <h4 class="text-info mb-3 text-center">📊 Website Integrity Status</h4>
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const ctx = document.getElementById('statusChart').getContext('2d');
+        const safe = {{ threat_stats.safe }};
+        const defaced = {{ threat_stats.defaced }};
+        const total = {{ threat_stats.total }};
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['✅ Safe', '🚨 Defaced'],
+                datasets: [{
+                    label: 'Status Summary',
+                    data: [safe, defaced],
+                    backgroundColor: ['#22c55e', '#ef4444'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: 'white',
+                            font: { size: 12 },
+                            padding: 20
+                        }
+                    },
+                    title: {
+                        display: false
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
+
+    <script>
+        function restoreSite(url) {
+            if (!confirm("Are you sure you want to restore this website to the last SAFE version?")) {
+                return;
+            }
+
+            fetch("/restore", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ url: url })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("✅ " + data.message);
+                        location.reload();
+                    } else {
+                        alert("❌ " + data.message);
+                    }
+                })
+                .catch(err => {
+                    alert("❌ Restore failed. Check server logs.");
+                    console.error(err);
+                });
+        }
+    </script>
+
+</body>
+
+</html>
