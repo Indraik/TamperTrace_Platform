@@ -1,87 +1,68 @@
-import os
-import time
 import datetime
-from urllib.parse import urlparse
-import vt
-from config import Config
-from app.database import get_vt_results_col
+from app.integrations.virustotal import VirusTotalClient
+from app.repositories.threat_repository import ThreatRepository
 
 class VirusTotalService:
-    """Service interfacing with VirusTotal API v3 for URL threat intelligence."""
+    """Domain service managing URL threat scanning, categorization, and cache policies."""
 
     def __init__(self, api_key=None):
-        self.api_key = api_key or Config.VT_API_KEY
-        self.client = None
-        if self.api_key:
-            try:
-                self.client = vt.Client(self.api_key)
-            except Exception as e:
-                print(f"⚠️ Failed to initialize VirusTotal client: {e}")
+        self.client = VirusTotalClient(api_key=api_key)
 
     @staticmethod
     def normalize_url(url):
-        """Clean and normalize URL for consistent querying."""
-        return url.rstrip("/").strip().lower()
+        return VirusTotalClient.normalize_url(url)
 
     @staticmethod
     def is_valid_url(url):
-        try:
-            parsed = urlparse(url)
-            return bool(parsed.scheme and parsed.netloc)
-        except Exception:
-            return False
+        return VirusTotalClient.is_valid_url(url)
 
     def scan_url(self, url, force_rescan=False):
-        """Scan a URL using VirusTotal API, utilizing cache if available."""
-        if not self.client:
-            print("⚠️ VirusTotal client not initialized (missing VT_API_KEY).")
-            return None
-
+        """Scan URL via VirusTotal client with 5-minute database cache."""
         url = self.normalize_url(url)
         if not self.is_valid_url(url):
             return None
 
-        vt_results_col = get_vt_results_col()
         current_time = datetime.datetime.now()
 
-        # Check 5-minute cache
+        # Check 5-minute cache unless force requested
         if not force_rescan:
-            cached = vt_results_col.find_one({"url": url})
+            cached = ThreatRepository.get_by_url(url)
             if cached:
                 last_checked = cached.get("last_checked")
                 if last_checked and (current_time - last_checked).total_seconds() < 300:
                     return cached
 
-        try:
-            url_id = vt.url_id(url)
-            analysis = self.client.get_object(f"/urls/{url_id}")
-            stats = analysis.last_analysis_stats
+        # Fetch from VirusTotal integration
+        if force_rescan:
+            analysis_data = self.client.submit_for_analysis(url)
+        else:
+            analysis_data = self.client.fetch_url_analysis(url)
 
-            inferred_threats = self._infer_threat_types(stats, url)
-            result = {
-                "url": url,
-                "malicious": stats.get("malicious", 0),
-                "suspicious": stats.get("suspicious", 0),
-                "harmless": stats.get("harmless", 0),
-                "undetected": stats.get("undetected", 0),
-                "total_engines": sum(stats.values()),
-                "vt_scan_date": str(analysis.last_analysis_date),
-                "last_checked": current_time,
-                "reputation": getattr(analysis, "reputation", 0),
-                "threat_types": inferred_threats,
-                "threat_severity": self.get_threat_severity(stats.get("malicious", 0)),
-                "cached_result": False
-            }
-
-            vt_results_col.update_one({"url": url}, {"$set": result}, upsert=True)
-            return result
-
-        except vt.APIError as e:
-            print(f"⚠️ VirusTotal API error for {url}: {e}")
+        if not analysis_data or not analysis_data.get("stats"):
             return None
-        except Exception as e:
-            print(f"❌ Scan error for {url}: {e}")
-            return None
+
+        stats = analysis_data["stats"]
+        inferred_threats = self._infer_threat_types(stats, url)
+
+        result = {
+            "url": url,
+            "malicious": stats.get("malicious", 0),
+            "suspicious": stats.get("suspicious", 0),
+            "harmless": stats.get("harmless", 0),
+            "undetected": stats.get("undetected", 0),
+            "total_engines": sum(stats.values()),
+            "vt_scan_date": analysis_data.get("vt_scan_date", str(current_time)),
+            "last_checked": current_time,
+            "scan_date": current_time,
+            "reputation": analysis_data.get("reputation", 0),
+            "threat_types": inferred_threats,
+            "threat_severity": self.get_threat_severity(stats.get("malicious", 0)),
+            "cached_result": False
+        }
+
+        # Save to database repository
+        ThreatRepository.save_scan_result(result)
+        return result
 
     @staticmethod
     def _infer_threat_types(stats, url):
@@ -136,7 +117,7 @@ class VirusTotalService:
 
     @staticmethod
     def get_threat_level(result_or_count):
-        """Unified helper to return safe/suspicious/malicious tag."""
+        """Standardized threat level tag for dashboard badges."""
         if isinstance(result_or_count, dict):
             malicious = result_or_count.get("malicious", 0)
             suspicious = result_or_count.get("suspicious", 0)
@@ -152,15 +133,10 @@ class VirusTotalService:
 
     @staticmethod
     def get_scan_history(limit=10):
-        """Retrieve recent scans from database."""
-        return list(get_vt_results_col().find().sort("last_checked", -1).limit(limit))
+        return ThreatRepository.get_recent_scans(limit=limit)
 
     def close(self):
-        if self.client:
-            try:
-                self.client.close()
-            except Exception:
-                pass
+        self.client.close()
 
 # Module-level convenience functions
 _scanner_instance = None

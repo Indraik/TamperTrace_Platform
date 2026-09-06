@@ -2,7 +2,7 @@ import io
 import datetime
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
-from app.database import get_monitored_urls_col
+from app.repositories.url_repository import UrlRepository
 
 class ReportService:
     """Service generating downloadable threat intelligence audit PDF reports."""
@@ -35,7 +35,7 @@ class ReportService:
         y -= 20
 
         pdf.setFont("Helvetica", 10)
-        records = list(get_monitored_urls_col().find())
+        records = UrlRepository.get_all()
 
         for rec in records:
             url = rec.get("url", "N/A")

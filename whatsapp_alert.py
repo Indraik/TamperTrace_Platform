@@ -1,32 +1,11 @@
-import os
-from twilio.rest import Client
-from dotenv import load_dotenv
-
-load_dotenv()
+"""
+Legacy compatibility wrapper for whatsapp_alert.py.
+Implementation has been refactored into app.integrations.whatsapp and app.services.alert_service.
+"""
+from app.services.alert_service import AlertService
 
 def send_whatsapp_alert(to_number, url, reason):
-    try:
-        account_sid = os.getenv("TWILIO_SID")
-        auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+    """Legacy wrapper delegating to AlertService."""
+    return AlertService.send_whatsapp_alert(to_number, url, reason)
 
-        if not account_sid or not auth_token:
-            print("❌ Twilio credentials missing")
-            return
-
-        client = Client(account_sid, auth_token)
-
-        message = client.messages.create(
-            from_="whatsapp:+14155238886",  # Twilio Sandbox
-            to=f"whatsapp:{to_number}",
-            body=(
-                "🚨 *TamperTrace Alert*\n\n"
-                f"🌐 Website: {url}\n"
-                f"⚠️ Issue: {reason}\n\n"
-                "Please check immediately."
-            )
-        )
-
-        print("📲 WhatsApp alert sent → SID:", message.sid)
-
-    except Exception as e:
-        print("❌ WhatsApp alert failed:", e)
+__all__ = ["send_whatsapp_alert"]

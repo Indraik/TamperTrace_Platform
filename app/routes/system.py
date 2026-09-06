@@ -1,32 +1,23 @@
 from flask import Blueprint, render_template, request, redirect, flash, send_file
 from jinja2.exceptions import TemplateNotFound
-from app.database import (
-    get_settings_col,
-    get_change_logs_col,
-    get_monitored_urls_col
-)
+from app.repositories.settings_repository import SettingsRepository
+from app.repositories.url_repository import UrlRepository
+from app.repositories.incident_repository import IncidentRepository
 from app.services.report_service import ReportService
 
 system_bp = Blueprint("system", __name__)
 
-@system_bp.route("/toggle_scheduler")
+@system_bp.route("/toggle_scheduler", methods=["GET", "POST"])
 def toggle_scheduler():
-    settings_col = get_settings_col()
-    settings = settings_col.find_one({"name": "system"})
-    current = settings.get("scheduler_enabled", False) if settings else False
-    new_value = not current
-
-    settings_col.update_one(
-        {"name": "system"},
-        {"$set": {"scheduler_enabled": new_value}}
-    )
-
+    """Toggle the background monitoring scheduler ON or OFF."""
+    new_value = SettingsRepository.toggle_scheduler()
     msg = "🟢 Monitoring Scheduler Enabled" if new_value else "🔴 Monitoring Scheduler Paused"
     flash(msg, "info")
     return redirect("/dashboard")
 
 @system_bp.route("/download_report")
 def download_report():
+    """Generate and stream executive audit threat intelligence PDF report."""
     buffer = ReportService.generate_threat_report()
     return send_file(
         buffer,
@@ -35,47 +26,41 @@ def download_report():
         mimetype="application/pdf"
     )
 
-@system_bp.route("/alerts")
-def alerts():
-    alerts_list = list(get_change_logs_col().find().sort("detected_at", -1))
-    return render_template("alerts.html", alerts=alerts_list)
-
-@system_bp.route("/forensics")
-def forensics():
-    alerts_list = list(get_change_logs_col().find().sort("detected_at", -1))
-    return render_template("alerts.html", alerts=alerts_list)
-
 @system_bp.route("/websites")
 def websites():
+    """Websites list view with fallback to dashboard."""
     try:
-        records = list(get_monitored_urls_col().find())
+        records = UrlRepository.get_all()
         return render_template("websites.html", websites=records)
     except TemplateNotFound:
         return redirect("/dashboard")
 
 @system_bp.route("/monitoring")
 def monitoring():
+    """Active monitoring overview with fallback to dashboard."""
     try:
-        records = list(get_monitored_urls_col().find())
+        records = UrlRepository.get_all()
         return render_template("monitoring.html", websites=records)
     except TemplateNotFound:
         return redirect("/dashboard")
 
 @system_bp.route("/settings", methods=["GET", "POST"])
 def settings():
+    """System settings management with fallback to dashboard."""
     if request.method == "POST":
         flash("✅ System configuration updated successfully.", "success")
         return redirect("/dashboard")
     try:
         return render_template("settings.html")
     except TemplateNotFound:
-        flash("ℹ️ Settings panel is integrated into dashboard toggles.", "info")
+        flash("ℹ️ Settings controls are integrated directly into dashboard toggles.", "info")
         return redirect("/dashboard")
 
 @system_bp.route("/export_logs")
 def export_logs():
+    """Export forensic change logs with fallback to alerts."""
     try:
-        logs = list(get_change_logs_col().find())
+        logs = IncidentRepository.get_all()
         return render_template("export_logs.html", logs=logs)
     except TemplateNotFound:
         return redirect("/alerts")

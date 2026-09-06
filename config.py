@@ -64,3 +64,9 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     """Production configuration."""
     DEBUG = False
+
+class TestingConfig(Config):
+    """Testing configuration."""
+    TESTING = True
+    DEBUG = False
+    DATABASE_NAME = os.getenv("TEST_DATABASE_NAME", "tampertrace_test")

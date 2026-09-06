@@ -1,20 +1,16 @@
 import os
-from datetime import datetime
 from urllib.parse import urlparse, unquote
 from config import Config
-from app.database import get_db, get_scans_col, get_restore_logs_col
+from app.repositories.scan_repository import ScanRepository
+from app.repositories.restore_repository import RestoreRepository
+from app.repositories.url_repository import UrlRepository
 
 class RestoreService:
-    """Service handling rollback of tampered target web templates to verified safe baselines."""
+    """Service handling rollback of tampered target templates to verified clean baselines."""
 
     @staticmethod
     def get_last_clean_snapshot(url):
-        """Fetch the most recent verified SAFE snapshot for a URL."""
-        scans_col = get_scans_col()
-        return scans_col.find_one(
-            {"url": url, "status": "SAFE"},
-            sort=[("timestamp", -1)]
-        )
+        return ScanRepository.get_last_clean_snapshot(url)
 
     @staticmethod
     def url_to_template_path(url):
@@ -38,7 +34,12 @@ class RestoreService:
     def restore_website(cls, url, restored_by="admin"):
         """
         Restore target template to last clean baseline snapshot.
-        Returns result dictionary.
+        1. Validates target directory
+        2. Retrieves last clean snapshot from ScanRepository
+        3. Creates safety backup of defaced file
+        4. Overwrites template with safe HTML
+        5. Logs audit record in RestoreRepository
+        6. Updates site state in UrlRepository
         """
         if not Config.TARGET_SITE_ROOT or not os.path.isdir(Config.TARGET_SITE_ROOT):
             return {
@@ -87,26 +88,22 @@ class RestoreService:
             with open(template_path, "w", encoding="utf-8") as f:
                 f.write(restored_html)
 
-            # 3. Log audit event
-            restore_log = {
-                "url": url,
-                "restored_from_timestamp": snapshot.get("timestamp"),
-                "restored_at": datetime.utcnow(),
-                "restored_by": restored_by,
-                "restore_status": "SUCCESS",
-                "note": "Restored to last verified SAFE snapshot"
-            }
-            get_restore_logs_col().insert_one(restore_log)
+            # 3. Log audit event in RestoreRepository
+            RestoreRepository.log_restore(
+                url=url,
+                restored_from_timestamp=snapshot.get("timestamp"),
+                restored_by=restored_by
+            )
 
-            # 4. Insert safe verification record in scans
-            get_scans_col().insert_one({
-                "url": url,
-                "html_content": restored_html,
-                "hash": restored_hash,
-                "status": "SAFE",
-                "timestamp": datetime.utcnow(),
-                "restored": True
-            })
+            # 4. Insert safe verification record in ScanRepository
+            ScanRepository.log_restored_snapshot(
+                url=url,
+                html_content=restored_html,
+                html_hash=restored_hash
+            )
+
+            # 5. Update monitored URL state in UrlRepository
+            UrlRepository.mark_restored(url, restored_hash=restored_hash)
 
             return {
                 "success": True,

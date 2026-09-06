@@ -1,19 +1,16 @@
 import time
-import datetime
 from flask import Blueprint, render_template, request, redirect, flash
-from app.database import (
-    get_monitored_urls_col,
-    get_vt_results_col,
-    get_settings_col
-)
+from app.repositories.url_repository import UrlRepository
+from app.repositories.threat_repository import ThreatRepository
+from app.repositories.settings_repository import SettingsRepository
 from app.services.virustotal_service import VirusTotalService, get_threat_level
 
 threats_bp = Blueprint("threats", __name__)
 
 @threats_bp.route("/threats")
 def threat_dashboard():
-    monitored_urls = list(get_monitored_urls_col().find({}, {"url": 1}))
-    vt_results_col = get_vt_results_col()
+    """Threat intelligence dashboard displaying categorized scans and stats."""
+    monitored_urls = UrlRepository.get_active_urls()
 
     threats = []
     suspicious = []
@@ -25,7 +22,7 @@ def threat_dashboard():
 
     for rec in monitored_urls:
         url = rec["url"]
-        scan = vt_results_col.find_one({"url": url}, sort=[("scan_date", -1)])
+        scan = ThreatRepository.get_by_url(url)
 
         if not scan:
             clean.append({
@@ -69,14 +66,14 @@ def threat_dashboard():
 
 @threats_bp.route("/scan_url", methods=["POST"])
 def scan_url():
+    """Execute on-demand threat intelligence scan on a specified URL."""
     url = VirusTotalService.normalize_url(request.form.get("url", ""))
     if not url:
         flash("❌ Please enter a valid URL", "error")
         return redirect("/dashboard")
 
-    settings = get_settings_col().find_one({"name": "system"})
-    if not settings or not settings.get("threat_intel_enabled", False):
-        flash("⚠️ Threat Intelligence is disabled. Enable it to run scans.", "warning")
+    if not SettingsRepository.is_threat_intel_enabled():
+        flash("⚠️ Threat Intelligence is disabled in settings. Please enable it to run scans.", "warning")
         return redirect("/dashboard")
 
     try:
@@ -87,36 +84,19 @@ def scan_url():
             return redirect("/dashboard")
 
         threat_lvl = get_threat_level(result)
-        flash(f"🔍 Scan Completed → Threat Level: {threat_lvl.upper()}", "success")
+        flash(f"🔍 Threat Intelligence Scan Completed → Threat Level: {threat_lvl.upper()}", "success")
     except Exception as e:
         flash(f"❌ Scan failed: {str(e)}", "error")
 
     return redirect("/dashboard")
 
-@threats_bp.route("/toggle_threat_intel")
+@threats_bp.route("/toggle_threat_intel", methods=["GET", "POST"])
 def toggle_threat_intel():
-    settings_col = get_settings_col()
-    settings = settings_col.find_one({"name": "system"})
-    current = settings.get("threat_intel_enabled", False) if settings else False
-    new_value = not current
-
-    settings_col.update_one(
-        {"name": "system"},
-        {"$set": {"threat_intel_enabled": new_value}}
-    )
+    """Toggle automated Threat Intelligence scanning."""
+    new_value = SettingsRepository.toggle_threat_intel()
 
     if new_value:
-        flash("🟢 Threat Intelligence Enabled – Scanning monitored URLs in background", "success")
-        vt_service = VirusTotalService()
-        urls = list(get_monitored_urls_col().find({}, {"url": 1}))
-
-        for rec in urls:
-            try:
-                vt_service.scan_url(rec["url"])
-                time.sleep(1)
-            except Exception as e:
-                print(f"VT scan failed for {rec['url']}: {e}")
-        vt_service.close()
+        flash("🟢 Threat Intelligence Enabled – Background analysis active", "success")
     else:
         flash("🔴 Threat Intelligence Disabled", "warning")
 

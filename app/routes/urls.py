@@ -3,12 +3,10 @@ import datetime
 import urllib.parse
 from flask import Blueprint, render_template, request, redirect, flash
 from config import Config
-from app.database import (
-    get_monitored_urls_col,
-    get_vt_results_col,
-    get_change_logs_col,
-    get_settings_col
-)
+from app.repositories.url_repository import UrlRepository
+from app.repositories.threat_repository import ThreatRepository
+from app.repositories.incident_repository import IncidentRepository
+from app.repositories.settings_repository import SettingsRepository
 from app.services.browser_service import BrowserService
 from app.services.virustotal_service import VirusTotalService
 
@@ -16,6 +14,7 @@ urls_bp = Blueprint("urls", __name__)
 
 @urls_bp.route("/add_url", methods=["GET", "POST"])
 def add_url():
+    """Register and establish initial baseline for a target website."""
     if request.method == "POST":
         url = request.form.get("url", "").strip()
         admin_email = request.form.get("admin_email", "").strip()
@@ -47,19 +46,15 @@ def add_url():
                 "created_at": datetime.datetime.now()
             }
 
-            get_monitored_urls_col().insert_one(site_data)
+            UrlRepository.add_url(site_data)
 
             # Auto Threat Intel scan if enabled
-            settings = get_settings_col().find_one({"name": "system"})
-            if settings and settings.get("threat_intel_enabled", False):
+            if SettingsRepository.is_threat_intel_enabled():
                 try:
                     vt_service = VirusTotalService()
-                    vt_result = vt_service.scan_url(url)
-                    if vt_result:
-                        vt_result["scan_date"] = datetime.datetime.now()
-                        get_vt_results_col().insert_one(vt_result)
+                    vt_service.scan_url(url)
                 except Exception as e:
-                    print("Threat Intel scan failed:", e)
+                    print(f"Auto VT scan notice: {e}")
 
             flash(f"✅ Successfully added {url} for monitoring!", "success")
             return redirect("/dashboard")
@@ -77,84 +72,72 @@ def add_url():
 
     return render_template("add_url.html")
 
-@urls_bp.route("/approve_change")
+@urls_bp.route("/approve_change", methods=["GET", "POST"])
 def approve_change():
-    url = request.args.get("url")
+    """Approve observed changes and update the safe baseline."""
+    url = request.args.get("url") if request.method == "GET" else request.form.get("url")
     if not url:
-        flash("❌ Invalid request", "error")
+        flash("❌ Invalid request: URL missing", "error")
         return redirect("/dashboard")
 
-    collection = get_monitored_urls_col()
-    record = collection.find_one({"url": url})
+    record = UrlRepository.get_by_url(url)
     if not record:
         flash("❌ URL not found in database", "error")
         return redirect("/dashboard")
 
     try:
-        # Re-capture current state to lock new baseline
         html_source, new_hash, screenshot_path = BrowserService.capture_initial_baseline(url)
-
-        collection.update_one({"url": url}, {
-            "$set": {
-                "html_hash": new_hash,
-                "screenshot_path": screenshot_path,
-                "change_detected": False,
-                "last_verified": datetime.datetime.now(),
-                "status": "✅ Approved by Admin"
-            }
-        })
-        flash(f"✅ Approved! Baseline updated for {url}", "success")
+        UrlRepository.update_baseline(
+            url=url,
+            html_hash=new_hash,
+            screenshot_path=screenshot_path,
+            status="✅ Approved by Admin"
+        )
+        flash(f"✅ Approved! Safe baseline updated for {url}", "success")
     except Exception as e:
         flash(f"❌ Error updating baseline: {str(e)}", "error")
 
     return redirect("/dashboard")
 
-@urls_bp.route("/deny_change")
+@urls_bp.route("/deny_change", methods=["GET", "POST"])
 def deny_change():
-    url = request.args.get("url")
+    """Flag changes as confirmed tampering / defacement under active investigation."""
+    url = request.args.get("url") if request.method == "GET" else request.form.get("url")
     if not url:
-        flash("❌ Invalid request", "error")
+        flash("❌ Invalid request: URL missing", "error")
         return redirect("/dashboard")
 
-    collection = get_monitored_urls_col()
-    record = collection.find_one({"url": url})
+    record = UrlRepository.get_by_url(url)
     if not record:
         flash("❌ URL not found in database", "error")
         return redirect("/dashboard")
 
-    collection.update_one({"url": url}, {
-        "$set": {
-            "status": "🚨 Defaced / Under Investigation",
-            "change_detected": True,
-            "last_verified": datetime.datetime.now()
-        }
-    })
-    flash(f"🚨 Tampering confirmed for {url}. Incident flagged.", "warning")
+    UrlRepository.confirm_defaced(url)
+    flash(f"🚨 Tampering confirmed for {url}. Incident flagged for investigation.", "warning")
     return redirect("/dashboard")
 
-@urls_bp.route("/delete_url")
+@urls_bp.route("/delete_url", methods=["GET", "POST"])
 def delete_url():
-    url = request.args.get("url")
-    if not url:
+    """Remove a URL from active monitoring and clean up associated assets."""
+    raw_url = request.args.get("url") if request.method == "GET" else request.form.get("url")
+    if not raw_url:
         flash("❌ Invalid URL parameter", "error")
         return redirect("/dashboard")
 
-    url = urllib.parse.unquote(url)
-    collection = get_monitored_urls_col()
-    record = collection.find_one({"url": url})
+    url = urllib.parse.unquote(raw_url)
+    record = UrlRepository.get_by_url(url)
     if not record:
         flash("❌ URL not found", "error")
         return redirect("/dashboard")
 
-    # Remove screenshots
+    # Clean up screenshots and archives
     try:
-        screenshot_path = record.get("screenshot_path")
-        if screenshot_path and os.path.exists(screenshot_path):
-            os.remove(screenshot_path)
+        sh_path = record.get("screenshot_path")
+        if sh_path and os.path.exists(sh_path):
+            os.remove(sh_path)
     except Exception:
         pass
 
-    # Remove archived captures
     try:
         archive_dir = Config.ARCHIVE_FOLDER
         if os.path.exists(archive_dir):
@@ -165,10 +148,10 @@ def delete_url():
     except Exception:
         pass
 
-    # Remove database records across collections
-    collection.delete_one({"url": url})
-    get_vt_results_col().delete_many({"url": url})
-    get_change_logs_col().delete_many({"url": url})
+    # Remove records across repositories
+    UrlRepository.delete_by_url(url)
+    ThreatRepository.delete_by_url(url)
+    IncidentRepository.delete_by_url(url)
 
     flash(f"🗑️ {url} removed from monitoring and threat intelligence", "success")
     return redirect("/dashboard")
