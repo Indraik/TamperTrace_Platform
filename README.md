@@ -113,8 +113,6 @@ TamperTrace_Platform/
 ├── config.py                      # Centralized configuration (Development / Production / Testing)
 ├── run.py                         # Web Server Entry Point (Auto-venv detection)
 ├── worker.py                      # Background Worker Entry Point (Auto-venv detection)
-├── app.py                         # Legacy backward-compatible web wrapper
-├── scheduler.py                   # Legacy backward-compatible worker wrapper
 ├── requirements.txt               # Pinned Python dependencies
 ├── .env.example                   # Sanitized configuration template
 └── .gitignore                     # Git exclusion rules
