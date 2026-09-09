@@ -39,5 +39,16 @@ class TestRoutes(unittest.TestCase):
         response = self.client.post("/restore", json={})
         self.assertEqual(response.status_code, 400)
 
+    def test_test_email_route(self):
+        response = self.client.post("/test_email", json={"to_email": "test@example.com"})
+        self.assertIn(response.status_code, [200, 400])
+
+    def test_worker_telemetry_route(self):
+        response = self.client.get("/api/worker_telemetry")
+        self.assertEqual(response.status_code, 200)
+        data = response.get_json()
+        self.assertIn("stages", data)
+        self.assertIn("scheduler_running", data)
+
 if __name__ == "__main__":
     unittest.main()

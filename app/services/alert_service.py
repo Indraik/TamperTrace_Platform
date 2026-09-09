@@ -13,7 +13,7 @@ class AlertService:
     def send_email_alert(to_email, url, content_changes, diff_percentage,
                          old_screenshot_path, new_screenshot_path, diff_path):
         """Dispatch HTML email alert with inline diff comparison."""
-        return EmailClient.send_tamper_alert(
+        res = EmailClient.send_tamper_alert(
             to_email=to_email,
             url=url,
             content_changes=content_changes,
@@ -22,6 +22,13 @@ class AlertService:
             new_screenshot_path=new_screenshot_path,
             diff_path=diff_path
         )
+        return res[0] if isinstance(res, tuple) else res
+
+    @staticmethod
+    def send_test_email(to_email=None):
+        """Dispatch a diagnostic test email to confirm SMTP connectivity and delivery."""
+        recipient = to_email or Config.EMAIL_SENDER
+        return EmailClient.send_test_email(recipient)
 
     @staticmethod
     def send_whatsapp_alert(to_number, url, reason):
@@ -36,9 +43,11 @@ class AlertService:
     def notify_tamper(cls, url, reason, diff_percentage, old_screenshot,
                        new_screenshot, diff_img, admin_email, admin_phone=None):
         """Unified method to dispatch alerts across all configured channels."""
+        results = {"email": False, "whatsapp": False}
+
         # 1. Email Notification
         if admin_email:
-            cls.send_email_alert(
+            results["email"] = cls.send_email_alert(
                 to_email=admin_email,
                 url=url,
                 content_changes=[reason],
@@ -51,4 +60,6 @@ class AlertService:
         # 2. WhatsApp Notification
         phone = admin_phone or Config.ADMIN_WHATSAPP
         if phone:
-            cls.send_whatsapp_alert(to_number=phone, url=url, reason=reason)
+            results["whatsapp"] = cls.send_whatsapp_alert(to_number=phone, url=url, reason=reason)
+
+        return results

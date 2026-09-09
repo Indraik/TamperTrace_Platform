@@ -1,912 +1,355 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>🧠 Threat Intelligence Dashboard - TamperTrace</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-       /* 
- * Futuristic Threat Intelligence Dashboard Theme
- * Cyber Security Interface with Neon Effects
- */
-
-body {
-    background: linear-gradient(135deg, #0a0a0f 0%, #0F172A 50%, #1a162f 100%);
-    color: #e2e8f0;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    min-height: 100vh;
-    position: relative;
-    overflow-x: hidden;
-}
-
-body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: 
-        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 40%),
-        radial-gradient(circle at 90% 80%, rgba(220, 38, 38, 0.1) 0%, transparent 40%),
-        repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(59, 130, 246, 0.03) 2px, rgba(59, 130, 246, 0.03) 4px);
-    pointer-events: none;
-    z-index: -1;
-}
-
-/* Dashboard Header */
-.navbar {
-    background: rgba(15, 23, 42, 0.9) !important;
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    border-bottom: 1px solid rgba(59, 130, 246, 0.4);
-    box-shadow: 
-        0 4px 40px rgba(0, 0, 0, 0.5),
-        0 0 50px rgba(59, 130, 246, 0.25),
-        0 0 0 1px rgba(255, 255, 255, 0.05);
-    padding: 1.5rem 2rem;
-}
-
-.navbar h2 {
-    background: linear-gradient(90deg, #00f7ff 0%, #8b5cf6 50%, #ff0080 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    font-weight: 900;
-    letter-spacing: 1.5px;
-    text-shadow: 0 0 40px rgba(0, 247, 255, 0.4);
-    position: relative;
-    text-transform: uppercase;
-    font-size: 1.8rem;
-}
-
-/* .navbar h2::after {
-    content: '';
-    position: absolute;
-    bottom: -8px;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background: linear-gradient(90deg, #00f7ff, #8b5cf6, #ff0080);
-    border-radius: 3px;
-    box-shadow: 0 0 20px rgba(0, 247, 255, 0.5);
-} */
-
-/* Glassmorphism Cards */
-.card {
-    background: rgba(30, 41, 59, 0.35) !important;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(59, 130, 246, 0.25);
-    border-radius: 20px;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-    color: #e2e8f0;
-}
-
-.card::before {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    background: linear-gradient(45deg, #3b82f6, #8b5cf6, #ec4899, #3b82f6);
-    background-size: 400% 400%;
-    border-radius: 22px;
-    z-index: -1;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-    animation: gradientShift 8s ease infinite;
-}
-
-.card:hover::before {
-    opacity: 0.6;
-}
-
-.card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 
-        0 25px 50px rgba(0, 0, 0, 0.4),
-        0 0 80px rgba(59, 130, 246, 0.35),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    border-color: rgba(59, 130, 246, 0.5);
-}
-
-@keyframes gradientShift {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-}
-
-/* Stat Cards with Neon Glow */
-.stat-card {
-    transition: all 0.4s ease;
-    border: 1px solid;
-    position: relative;
-    overflow: hidden;
-}
-
-.stat-card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    transition: left 0.7s ease;
-}
-
-.stat-card:hover::after {
-    left: 100%;
-}
-
-.col-md-3:nth-child(1) .stat-card {
-    border-color: rgba(59, 130, 246, 0.4);
-    box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
-}
-
-.col-md-3:nth-child(2) .stat-card {
-    border-color: rgba(220, 38, 38, 0.4);
-    box-shadow: 0 0 30px rgba(220, 38, 38, 0.2);
-}
-
-.col-md-3:nth-child(3) .stat-card {
-    border-color: rgba(234, 88, 12, 0.4);
-    box-shadow: 0 0 30px rgba(234, 88, 12, 0.2);
-}
-
-.col-md-3:nth-child(4) .stat-card {
-    border-color: rgba(34, 197, 94, 0.4);
-    box-shadow: 0 0 30px rgba(34, 197, 94, 0.2);
-}
-
-.stat-card:hover {
-    transform: translateY(-12px) scale(1.03);
-    box-shadow: 
-        0 30px 60px rgba(0, 0, 0, 0.5),
-        0 0 100px currentColor;
-}
-
-.stat-card h2 {
-    font-size: 3rem;
-    font-weight: 900;
-    text-shadow: 0 0 20px currentColor;
-    margin: 10px 0;
-}
-
-.col-md-3:nth-child(1) h2 { color: #3b82f6; }
-.col-md-3:nth-child(2) h2 { color: #dc2626; }
-.col-md-3:nth-child(3) h2 { color: #ea580c; }
-.col-md-3:nth-child(4) h2 { color: #22c55e; }
-
-.stat-card h5 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-    margin-bottom: 15px;
-}
-
-/* Threat Level Badges - Animated */
-.threat-high, .threat-medium, .threat-low, .threat-clean {
-    padding: 10px 20px;
-    border-radius: 12px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    box-shadow: 0 0 25px currentColor;
-    transition: all 0.3s ease;
-    border: 2px solid;
-    position: relative;
-    overflow: hidden;
-}
-
-.threat-high {
-    background: linear-gradient(135deg, rgba(220, 38, 38, 0.2), rgba(220, 38, 38, 0.3));
-    color: #dc2626;
-    border-color: #dc2626;
-    animation: pulseDanger 1.5s infinite alternate;
-}
-
-@keyframes pulseDanger {
-    0% { box-shadow: 0 0 25px rgba(220, 38, 38, 0.5); }
-    100% { box-shadow: 0 0 45px rgba(220, 38, 38, 0.8); }
-}
-
-.threat-medium {
-    background: linear-gradient(135deg, rgba(234, 88, 12, 0.2), rgba(234, 88, 12, 0.3));
-    color: #ea580c;
-    border-color: #ea580c;
-}
-
-.threat-low {
-    background: linear-gradient(135deg, rgba(217, 119, 6, 0.2), rgba(217, 119, 6, 0.3));
-    color: #d97706;
-    border-color: #d97706;
-}
-
-.threat-clean {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.3));
-    color: #22c55e;
-    border-color: #22c55e;
-}
-
-/* Chart Containers */
-.card canvas {
-    background: rgba(15, 23, 42, 0.3);
-    border-radius: 15px;
-    padding: 15px;
-    border: 1px solid rgba(59, 130, 246, 0.2);
-}
-
-/* Tables - Cyber Grid */
-.table-dark {
-    background: rgba(30, 41, 59, 0.4);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border-radius: 15px;
-    overflow: hidden;
-    border: 1px solid rgba(59, 130, 246, 0.2);
-}
-
-.table-dark thead {
-    background: linear-gradient(90deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3));
-}
-
-.table-dark thead th {
-    color: #00f7ff;
-    border-bottom: 2px solid rgba(59, 130, 246, 0.5);
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    padding: 20px;
-    text-shadow: 0 0 10px rgba(0, 247, 255, 0.3);
-}
-
-.table-dark tbody tr {
-    transition: all 0.3s ease;
-    border-bottom: 1px solid rgba(59, 130, 246, 0.1);
-}
-
-.table-dark tbody tr:hover {
-    background: rgba(59, 130, 246, 0.15) !important;
-    transform: translateX(10px);
-    box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
-}
-
-/* Threat Tooltip - Holographic Display */
-.threat-tooltip {
-    position: relative;
-    display: inline-block;
-}
-
-.threat-popup {
-    display: none;
-    position: absolute;
-    z-index: 1000;
-    background: rgba(30, 41, 59, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(59, 130, 246, 0.4);
-    border-radius: 15px;
-    padding: 20px;
-    min-width: 300px;
-    box-shadow: 
-        0 20px 50px rgba(0, 0, 0, 0.5),
-        0 0 60px rgba(59, 130, 246, 0.3);
-    transform: translateY(10px);
-    opacity: 0;
-    transition: all 0.3s ease;
-}
-
-.threat-popup.show {
-    display: block;
-    transform: translateY(0);
-    opacity: 1;
-}
-
-.threat-popup .card {
-    background: rgba(15, 23, 42, 0.6) !important;
-    border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
-.threat-popup h6 {
-    color: #00f7ff;
-    font-weight: 700;
-    margin-bottom: 15px;
-    text-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
-}
-
-.threat-popup .small {
-    color: #cbd5e1;
-    margin: 5px 0;
-}
-
-/* Buttons - Cyber Interface */
-.btn {
-    border-radius: 12px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    border: none;
-    padding: 12px 24px;
-    text-transform: uppercase;
-}
-
-.btn-outline-info {
-    background: transparent;
-    color: #00f7ff;
-    border: 2px solid #00f7ff;
-    box-shadow: 0 0 25px rgba(0, 247, 255, 0.3);
-}
-
-.btn-outline-info:hover {
-    background: rgba(0, 247, 255, 0.1);
-    box-shadow: 0 0 40px rgba(0, 247, 255, 0.6);
-    transform: translateY(-3px);
-}
-
-.btn-outline-warning {
-    background: transparent;
-    color: #f59e0b;
-    border: 2px solid #f59e0b;
-    box-shadow: 0 0 25px rgba(245, 158, 11, 0.3);
-}
-
-.btn-outline-warning:hover {
-    background: rgba(245, 158, 11, 0.1);
-    box-shadow: 0 0 40px rgba(245, 158, 11, 0.6);
-    transform: translateY(-3px);
-}
-
-.btn-outline-success {
-    background: transparent;
-    color: #22c55e;
-    border: 2px solid #22c55e;
-    box-shadow: 0 0 25px rgba(34, 197, 94, 0.3);
-}
-
-.btn-outline-success:hover {
-    background: rgba(34, 197, 94, 0.1);
-    box-shadow: 0 0 40px rgba(34, 197, 94, 0.6);
-    transform: translateY(-3px);
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-    border: none;
-    box-shadow: 
-        0 10px 30px rgba(59, 130, 246, 0.5),
-        0 0 20px rgba(59, 130, 246, 0.3);
-}
-
-.btn-primary:hover {
-    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-    box-shadow: 
-        0 15px 40px rgba(59, 130, 246, 0.7),
-        0 0 30px rgba(59, 130, 246, 0.5);
-    transform: translateY(-3px);
-}
-
-.btn-success {
-    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-    border: none;
-    box-shadow: 0 10px 30px rgba(34, 197, 94, 0.5);
-}
-
-.btn-success:hover {
-    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
-    box-shadow: 0 15px 40px rgba(34, 197, 94, 0.7);
-    transform: translateY(-3px);
-}
-
-.btn-danger {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    border: none;
-    box-shadow: 0 10px 30px rgba(239, 68, 68, 0.5);
-}
-
-.btn-danger:hover {
-    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-    box-shadow: 0 15px 40px rgba(239, 68, 68, 0.7);
-    transform: translateY(-3px);
-}
-
-.btn-warning {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    border: none;
-    box-shadow: 0 10px 30px rgba(245, 158, 11, 0.5);
-    color: white;
-}
-
-.btn-warning:hover {
-    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-    box-shadow: 0 15px 40px rgba(245, 158, 11, 0.7);
-    transform: translateY(-3px);
-}
-
-/* Form Inputs */
-#scanForm {
-    animation: slideDown 0.5s ease;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.form-control {
-    background: rgba(15, 23, 42, 0.7) !important;
-    border: 2px solid rgba(59, 130, 246, 0.4);
-    border-radius: 12px;
-    color: #e2e8f0;
-    padding: 14px 20px;
-    transition: all 0.3s ease;
-}
-
-.form-control:focus {
-    background: rgba(15, 23, 42, 0.9) !important;
-    border-color: #3b82f6;
-    box-shadow: 
-        0 0 0 4px rgba(59, 130, 246, 0.25),
-        0 0 30px rgba(59, 130, 246, 0.2);
-    color: #e2e8f0;
-}
-
-/* Text Colors */
-.text-info {
-    color: #00f7ff !important;
-    text-shadow: 0 0 25px rgba(0, 247, 255, 0.4);
-}
-
-.text-danger {
-    color: #ef4444 !important;
-    text-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
-}
-
-.text-warning {
-    color: #f59e0b !important;
-    text-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
-}
-
-.text-success {
-    color: #22c55e !important;
-    text-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
-}
-
-.text-primary {
-    color: #3b82f6 !important;
-    text-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
-}
-
-.text-muted {
-    color: #94a3b8 !important;
-}
-
-/* Scrollbar */
-::-webkit-scrollbar {
-    width: 12px;
-}
-
-::-webkit-scrollbar-track {
-    background: rgba(15, 23, 42, 0.6);
-    border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, #3b82f6 0%, #8b5cf6 100%);
-    border-radius: 10px;
-    border: 3px solid rgba(15, 23, 42, 0.6);
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, #2563eb 0%, #7c3aed 100%);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .navbar {
-        padding: 1rem;
-    }
-    
-    .stat-card h2 {
-        font-size: 2.5rem;
-    }
-    
-    .threat-popup {
-        min-width: 250px;
-        right: 0;
-    }
-}
-    </style>
-</head>
-<body>
-
-    <nav class="navbar navbar-dark px-4 py-3">
-        <h2 class="m-0">🧠 Threat Intelligence Dashboard</h2>
-        <div>
-            <a href="/dashboard" class="btn btn-outline-info me-2">📊 Main Dashboard</a>
-            <a href="/add_url" class="btn btn-primary">➕ Add URL</a>
-        </div>
-    </nav>
-
-    <div class="container my-5">
-        
-        <!-- Threat Intel Toggle -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card p-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h4 class="text-info mb-0">🧠 Threat Intelligence</h4>
-                        {% if settings.get('threat_intel_enabled', True) %}
-                            <a href="/toggle_threat_intel" class="btn btn-success">
-                                🟢 Threat Intel ENABLED (Click to Disable)
-                            </a>
-                        {% else %}
-                            <a href="/toggle_threat_intel" class="btn btn-danger">
-                                🔴 Threat Intel DISABLED (Click to Enable)
-                            </a>
-                        {% endif %}
-                    </div>
-                </div>
+{% extends "base.html" %}
+
+{% block title %}Threat Intelligence Console | TamperTrace Platform{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+
+    <!-- ENGINE STATUS & TOGGLE -->
+    <div class="card-cyber mb-4">
+        <div class="card-cyber-body d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+            <div>
+                <h4 class="fw-bold mb-1 d-flex align-items-center gap-2 text-white">
+                    <i class="bi bi-shield-shaded text-info"></i> Threat Intelligence Engine
+                </h4>
+                <p class="text-secondary small mb-0">
+                    Automated VirusTotal v3 reputation querying, signature matching, and heuristic threat score correlation.
+                </p>
+            </div>
+            <div>
+                {% if settings and settings.get('threat_intel_enabled', True) %}
+                <a href="/toggle_threat_intel" class="btn btn-success d-inline-flex align-items-center gap-2 px-3 py-2 fw-semibold">
+                    <span class="pulse-dot running"></span> Threat Intel ENABLED (Click to Pause)
+                </a>
+                {% else %}
+                <a href="/toggle_threat_intel" class="btn btn-danger d-inline-flex align-items-center gap-2 px-3 py-2 fw-semibold">
+                    <span class="pulse-dot stopped"></span> Threat Intel PAUSED (Click to Enable)
+                </a>
+                {% endif %}
             </div>
         </div>
-
-        <!-- Threat Overview Stats -->
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="card text-center p-3 stat-card">
-                    <h5>🔍 Total Scans</h5>
-                    <h2 class="text-primary">{{ threat_stats.total_scans }}</h2>
-                    <small class="text-muted">All time scans</small>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card text-center p-3 stat-card">
-                    <h5>🚨 Malicious</h5>
-                    <h2 class="text-danger">{{ threat_stats.malicious }}</h2>
-                    <small class="text-muted">Active threats</small>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card text-center p-3 stat-card">
-                    <h5>⚠️ Suspicious</h5>
-                    <h2 class="text-warning">{{ threat_stats.suspicious }}</h2>
-                    <small class="text-muted">Potential threats</small>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card text-center p-3 stat-card">
-                    <h5>✅ Clean</h5>
-                    <h2 class="text-success">{{ threat_stats.clean }}</h2>
-                    <small class="text-muted">Safe URLs</small>
-                </div>
-            </div>
-        </div>
-
-        <!-- Charts Row -->
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="card p-4">
-                    <h4 class="text-info mb-3">📈 Threat Distribution</h4>
-                    <canvas id="threatChart" height="250"></canvas>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card p-4">
-                    <h4 class="text-info mb-3">🕒 Recent Scan Activity</h4>
-                    <canvas id="activityChart" height="250"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Malicious Threats Section -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card p-4">
-                    <h4 class="text-danger mb-3">🚨 Malicious Threats Detected</h4>
-                    {% if threats %}
-                    <div class="table-responsive">
-                        <table class="table table-dark table-hover">
-                            <thead>
-                                <tr>
-                                    <th>URL</th>
-                                    <th>Malicious</th>
-                                    <th>Suspicious</th>
-                                    <th>Harmless</th>
-                                    <th>Total Engines</th>
-                                    <th>Threat Level</th>
-                                    <th>Threat Types</th>
-                                    <th>Last Checked</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for threat in threats %}
-                                <tr>
-                                    <td class="text-truncate" style="max-width: 200px;" title="{{ threat.url }}">
-                                        {{ threat.url }}
-                                    </td>
-                                    <td class="text-danger fw-bold">{{ threat.malicious }}</td>
-                                    <td class="text-warning">{{ threat.suspicious }}</td>
-                                    <td class="text-success">{{ threat.harmless }}</td>
-                                    <td class="text-info">{{ threat.total_engines }}</td>
-                                    <td>
-                                        {% set threat_level = get_threat_level(threat) %}
-                                        {% if threat_level == 'high' %}
-                                            <span class="badge threat-high">HIGH</span>
-                                        {% elif threat_level == 'medium' %}
-                                            <span class="badge threat-medium">MEDIUM</span>
-                                        {% elif threat_level == 'low' %}
-                                            <span class="badge threat-low">LOW</span>
-                                        {% else %}
-                                            <span class="badge threat-clean">CLEAN</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if threat.threat_types and threat.threat_types[0] != '✅ CLEAN' %}
-                                            <div class="threat-tooltip">
-                                                <button class="btn btn-sm btn-outline-warning" 
-                                                        onclick="toggleThreatDetails('{{ threat.url | replace('.', '-') }}')">
-                                                    🔍 {{ threat.threat_types[0] }}
-                                                </button>
-                                                <div class="threat-popup" id="threat-{{ threat.url | replace('.', '-') }}">
-                                                    <div class="card bg-dark text-white p-2">
-                                                        <h6>🛡️ Detected Threats:</h6>
-                                                        {% for threat_type in threat.threat_types %}
-                                                        <div class="small">• {{ threat_type }}</div>
-                                                        {% endfor %}
-                                                        <div class="mt-2 small text-muted">
-                                                            Severity: <strong>{{ threat.threat_severity }}</strong><br>
-                                                            Based on {{ threat.malicious }} malicious detections
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        {% else %}
-                                            <span class="badge bg-success">CLEAN</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {{ threat.last_checked.strftime('%Y-%m-%d %H:%M') if threat.last_checked else 'Unknown' }}
-                                        {% if threat.cached_result %}
-                                            <br><small class="text-muted">(Cached)</small>
-                                        {% else %}
-                                            <br><small class="text-success">(Fresh)</small>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center p-4">
-                        <h5 class="text-success">🎉 No malicious threats detected!</h5>
-                        <p class="text-muted">All scanned URLs are clean and safe.</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Suspicious Activity Section -->
-        <div class="row">
-            <div class="col-12">
-                <div class="card p-4">
-                    <h4 class="text-warning mb-3">⚠️ Suspicious Activity</h4>
-                    {% if suspicious %}
-                    <div class="table-responsive">
-                        <table class="table table-dark table-hover">
-                            <thead>
-                                <tr>
-                                    <th>URL</th>
-                                    <th>Malicious</th>
-                                    <th>Suspicious</th>
-                                    <th>Harmless</th>
-                                    <th>Total Engines</th>
-                                    <th>Threat Level</th>
-                                    <th>Threat Types</th>
-                                    <th>Last Checked</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for suspect in suspicious %}
-                                <tr>
-                                    <td class="text-truncate" style="max-width: 200px;" title="{{ suspect.url }}">
-                                        {{ suspect.url }}
-                                    </td>
-                                    <td class="text-danger">{{ suspect.malicious }}</td>
-                                    <td class="text-warning fw-bold">{{ suspect.suspicious }}</td>
-                                    <td class="text-success">{{ suspect.harmless }}</td>
-                                    <td class="text-info">{{ suspect.total_engines }}</td>
-                                    <td>
-                                        {% set threat_level = get_threat_level(suspect) %}
-                                        {% if threat_level == 'high' %}
-                                            <span class="badge threat-high">HIGH</span>
-                                        {% elif threat_level == 'medium' %}
-                                            <span class="badge threat-medium">MEDIUM</span>
-                                        {% elif threat_level == 'low' %}
-                                            <span class="badge threat-low">LOW</span>
-                                        {% else %}
-                                            <span class="badge threat-clean">CLEAN</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if suspect.threat_types and suspect.threat_types[0] != '✅ CLEAN' %}
-                                            <div class="threat-tooltip">
-                                                <button class="btn btn-sm btn-outline-warning" 
-                                                        onclick="toggleThreatDetails('{{ suspect.url | replace('.', '-') }}')">
-                                                    🔍 {{ suspect.threat_types[0] }}
-                                                </button>
-                                                <div class="threat-popup" id="threat-{{ suspect.url | replace('.', '-') }}">
-                                                    <div class="card bg-dark text-white p-2">
-                                                        <h6>🛡️ Detected Threats:</h6>
-                                                        {% for threat_type in suspect.threat_types %}
-                                                        <div class="small">• {{ threat_type }}</div>
-                                                        {% endfor %}
-                                                        <div class="mt-2 small text-muted">
-                                                            Severity: <strong>{{ suspect.threat_severity }}</strong><br>
-                                                            Based on {{ suspect.malicious }} malicious, {{ suspect.suspicious }} suspicious
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        {% else %}
-                                            <span class="badge bg-success">CLEAN</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {{ suspect.last_checked.strftime('%Y-%m-%d %H:%M') if suspect.last_checked else 'Unknown' }}
-                                        {% if suspect.cached_result %}
-                                            <br><small class="text-muted">(Cached)</small>
-                                        {% else %}
-                                            <br><small class="text-success">(Fresh)</small>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center p-4">
-                        <h5 class="text-success">✅ No suspicious activity detected!</h5>
-                        <p class="text-muted">All scans show clean results.</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card p-4">
-                    <h4 class="text-info mb-3">⚡ Quick Actions</h4>
-                    <div class="d-flex gap-2 flex-wrap">
-                        <a href="/dashboard" class="btn btn-outline-info">📊 Back to Main Dashboard</a>
-                        <a href="/scan_url" class="btn btn-outline-warning" onclick="document.getElementById('scanForm').style.display='block'; return false;">🔍 Quick Scan URL</a>
-                        <button class="btn btn-outline-success" onclick="exportThreatReport()">📥 Export Threat Report</button>
-                    </div>
-                    
-                    <!-- Hidden Quick Scan Form -->
-                    <div id="scanForm" class="mt-3" style="display: none;">
-                        <form action="/scan_url" method="post" class="d-flex gap-2">
-                            <input type="url" name="url" class="form-control" placeholder="https://example.com" required>
-                            <button type="submit" class="btn btn-warning">🚀 Scan</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        const threatCtx = document.getElementById('threatChart').getContext('2d');
-        new Chart(threatCtx, {
-            type: 'pie',
-            data: {
-                labels: ['🚨 Malicious', '⚠️ Suspicious', '✅ Clean'],
-                datasets: [{
-                    data: [
-                        {{ threat_stats.malicious }},
-                        {{ threat_stats.suspicious }}, 
-                        {{ threat_stats.clean }}
-                    ],
-                    backgroundColor: ['#dc2626', '#ea580c', '#16a34a'],
-                    borderWidth: 2,
-                    borderColor: '#1e293b'
-                }]
-            },
-            options: {
-                plugins: {
-                    legend: {
-                        labels: { color: 'white', font: { size: 14 } }
-                    },
-                    title: {
-                        display: true,
-                        text: 'Threat Distribution',
-                        color: 'white',
-                        font: { size: 16 }
-                    }
+    <!-- THREAT STATS CARDS -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card-cyber stat-card">
+                <div class="stat-card-title">
+                    <i class="bi bi-search text-info"></i> Total Evaluated
+                </div>
+                <div class="stat-card-value text-info">{{ threat_stats.total_scans }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card-cyber stat-card">
+                <div class="stat-card-title">
+                    <i class="bi bi-bug-fill text-danger"></i> Malicious Threats
+                </div>
+                <div class="stat-card-value text-danger">{{ threat_stats.malicious }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card-cyber stat-card">
+                <div class="stat-card-title">
+                    <i class="bi bi-exclamation-triangle-fill text-warning"></i> Suspicious
+                </div>
+                <div class="stat-card-value text-warning">{{ threat_stats.suspicious }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card-cyber stat-card">
+                <div class="stat-card-title">
+                    <i class="bi bi-shield-check text-success"></i> Clean & Harmless
+                </div>
+                <div class="stat-card-value text-success">{{ threat_stats.clean }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHARTS ROW -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card-cyber h-100">
+                <div class="card-cyber-header">
+                    <h5 class="card-cyber-title">
+                        <i class="bi bi-pie-chart-fill text-info"></i> Threat Severity Distribution
+                    </h5>
+                </div>
+                <div class="card-cyber-body d-flex align-items-center justify-content-center" style="min-height: 260px;">
+                    {% if threat_stats.total_scans > 0 %}
+                    <div style="position: relative; width: 230px; height: 230px;">
+                        <canvas id="threatChart"></canvas>
+                    </div>
+                    {% else %}
+                    <div class="empty-state py-2">
+                        <i class="bi bi-pie-chart fs-2 text-secondary mb-2 d-block"></i>
+                        <p class="small mb-0">No telemetry scans to plot yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card-cyber h-100">
+                <div class="card-cyber-header">
+                    <h5 class="card-cyber-title">
+                        <i class="bi bi-activity text-info"></i> Scan Activity Velocity
+                    </h5>
+                </div>
+                <div class="card-cyber-body" style="min-height: 260px;">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MALICIOUS THREATS SECTION -->
+    <div class="card-cyber mb-4">
+        <div class="card-cyber-header bg-danger bg-opacity-10">
+            <h5 class="card-cyber-title text-danger">
+                <i class="bi bi-shield-slash-fill"></i> Confirmed Malicious Signatures
+            </h5>
+            <span class="badge bg-danger">{{ threats|length }} Incidents</span>
+        </div>
+        <div class="card-cyber-body p-0">
+            {% if threats %}
+            <div class="table-responsive">
+                <table class="table-cyber">
+                    <thead>
+                        <tr>
+                            <th>Target URL</th>
+                            <th class="text-center">Malicious</th>
+                            <th class="text-center">Suspicious</th>
+                            <th class="text-center">Harmless</th>
+                            <th class="text-center">Total Engines</th>
+                            <th>Threat Level</th>
+                            <th>Threat Types</th>
+                            <th>Last Checked</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for threat in threats %}
+                        <tr>
+                            <td class="text-truncate font-monospace text-light" style="max-width: 220px;" title="{{ threat.url }}">
+                                {{ threat.url }}
+                            </td>
+                            <td class="text-center text-danger fw-bold">{{ threat.malicious }}</td>
+                            <td class="text-center text-warning fw-bold">{{ threat.suspicious }}</td>
+                            <td class="text-center text-success">{{ threat.harmless }}</td>
+                            <td class="text-center text-secondary">{{ threat.total_engines }}</td>
+                            <td>
+                                {% set threat_level = get_threat_level(threat) %}
+                                {% if threat_level == 'high' %}
+                                <span class="badge-threat high">HIGH</span>
+                                {% elif threat_level == 'medium' %}
+                                <span class="badge-threat medium">MEDIUM</span>
+                                {% elif threat_level == 'low' %}
+                                <span class="badge-threat low">LOW</span>
+                                {% else %}
+                                <span class="badge-threat clean">CLEAN</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if threat.threat_types and threat.threat_types[0] != '✅ CLEAN' %}
+                                <span class="badge bg-dark border border-danger text-danger">
+                                    <i class="bi bi-bug me-1"></i> {{ threat.threat_types[0] }}
+                                </span>
+                                {% else %}
+                                <span class="badge-threat clean">CLEAN</span>
+                                {% endif %}
+                            </td>
+                            <td class="small text-secondary">
+                                {{ threat.last_checked.strftime('%Y-%m-%d %H:%M') if threat.last_checked else 'Unknown' }}
+                                {% if threat.cached_result %}
+                                <span class="text-muted d-block">(Cached)</span>
+                                {% else %}
+                                <span class="text-success d-block">(Fresh)</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state py-4">
+                <i class="bi bi-shield-check fs-2 text-success mb-2 d-block"></i>
+                <h6 class="text-success fw-bold">Zero Malicious Threats Detected</h6>
+                <p class="empty-state-desc mb-0">All monitored and audited endpoints are currently free from malware, blacklists, and phishing flags.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- SUSPICIOUS ACTIVITY SECTION -->
+    <div class="card-cyber mb-4">
+        <div class="card-cyber-header bg-warning bg-opacity-10">
+            <h5 class="card-cyber-title text-warning">
+                <i class="bi bi-exclamation-triangle-fill"></i> Suspicious Activity & Heuristics
+            </h5>
+            <span class="badge bg-warning text-dark">{{ suspicious|length }} Flagged</span>
+        </div>
+        <div class="card-cyber-body p-0">
+            {% if suspicious %}
+            <div class="table-responsive">
+                <table class="table-cyber">
+                    <thead>
+                        <tr>
+                            <th>Target URL</th>
+                            <th class="text-center">Malicious</th>
+                            <th class="text-center">Suspicious</th>
+                            <th class="text-center">Harmless</th>
+                            <th class="text-center">Engines</th>
+                            <th>Threat Level</th>
+                            <th>Threat Types</th>
+                            <th>Last Checked</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for suspect in suspicious %}
+                        <tr>
+                            <td class="text-truncate font-monospace text-light" style="max-width: 220px;" title="{{ suspect.url }}">
+                                {{ suspect.url }}
+                            </td>
+                            <td class="text-center text-danger">{{ suspect.malicious }}</td>
+                            <td class="text-center text-warning fw-bold">{{ suspect.suspicious }}</td>
+                            <td class="text-center text-success">{{ suspect.harmless }}</td>
+                            <td class="text-center text-secondary">{{ suspect.total_engines }}</td>
+                            <td>
+                                {% set threat_level = get_threat_level(suspect) %}
+                                {% if threat_level == 'high' %}
+                                <span class="badge-threat high">HIGH</span>
+                                {% elif threat_level == 'medium' %}
+                                <span class="badge-threat medium">MEDIUM</span>
+                                {% elif threat_level == 'low' %}
+                                <span class="badge-threat low">LOW</span>
+                                {% else %}
+                                <span class="badge-threat clean">CLEAN</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if suspect.threat_types and suspect.threat_types[0] != '✅ CLEAN' %}
+                                <span class="badge bg-dark border border-warning text-warning">
+                                    <i class="bi bi-exclamation-triangle me-1"></i> {{ suspect.threat_types[0] }}
+                                </span>
+                                {% else %}
+                                <span class="badge-threat clean">CLEAN</span>
+                                {% endif %}
+                            </td>
+                            <td class="small text-secondary">
+                                {{ suspect.last_checked.strftime('%Y-%m-%d %H:%M') if suspect.last_checked else 'Unknown' }}
+                                {% if suspect.cached_result %}
+                                <span class="text-muted d-block">(Cached)</span>
+                                {% else %}
+                                <span class="text-success d-block">(Fresh)</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state py-4">
+                <i class="bi bi-check-circle fs-2 text-info mb-2 d-block"></i>
+                <h6 class="text-info fw-bold">No Suspicious Activity Detected</h6>
+                <p class="empty-state-desc mb-0">No heuristic or borderline suspicious indicators have been flagged by threat engines.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="card-cyber mb-4">
+        <div class="card-cyber-header">
+            <h5 class="card-cyber-title">
+                <i class="bi bi-lightning-charge-fill text-info"></i> Security Operations Actions
+            </h5>
+        </div>
+        <div class="card-cyber-body d-flex flex-wrap gap-2">
+            <a href="/dashboard" class="btn-cyber-outline">
+                <i class="bi bi-speedometer2"></i> Return to Main Dashboard
+            </a>
+            <a href="/download_report" class="btn-cyber-outline">
+                <i class="bi bi-file-earmark-pdf"></i> Download PDF Forensic Report
+            </a>
+            <a href="/add_url" class="btn-cyber-primary">
+                <i class="bi bi-plus-lg"></i> Add Target URL
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Threat distribution pie chart
+    {% if threat_stats.total_scans > 0 %}
+    const threatCtx = document.getElementById('threatChart').getContext('2d');
+    new Chart(threatCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Malicious', 'Suspicious', 'Clean'],
+            datasets: [{
+                data: [
+                    {{ threat_stats.malicious }},
+                    {{ threat_stats.suspicious }},
+                    {{ threat_stats.clean }}
+                ],
+                backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
+                borderColor: '#0c101c',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#94a3b8', font: { size: 12 }, padding: 12 }
                 }
             }
-        });
+        }
+    });
+    {% endif %}
 
-        const activityCtx = document.getElementById('activityChart').getContext('2d');
-        new Chart(activityCtx, {
-            type: 'line',
-            data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                datasets: [{
-                    label: 'Scans Per Day',
-                    data: [12, 19, 8, 15, 12, 6, 9],
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
+    // Activity chart
+    const activityCtx = document.getElementById('activityChart').getContext('2d');
+    new Chart(activityCtx, {
+        type: 'line',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+                label: 'Threat Queries',
+                data: [4, 8, 5, 12, 9, 6, {{ threat_stats.total_scans }}],
+                borderColor: '#00f2fe',
+                backgroundColor: 'rgba(0, 242, 254, 0.08)',
+                tension: 0.35,
+                fill: true,
+                pointBackgroundColor: '#00f2fe'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
             },
-            options: {
-                plugins: {
-                    legend: {
-                        labels: { color: 'white' }
-                    }
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: '#94a3b8' },
+                    grid: { color: 'rgba(56, 189, 248, 0.08)' }
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { color: 'white' },
-                        grid: { color: 'rgba(255,255,255,0.1)' }
-                    },
-                    x: {
-                        ticks: { color: 'white' },
-                        grid: { color: 'rgba(255,255,255,0.1)' }
-                    }
+                x: {
+                    ticks: { color: '#94a3b8' },
+                    grid: { color: 'rgba(56, 189, 248, 0.08)' }
                 }
             }
-        });
-
-        function toggleThreatDetails(id) {
-            const popup = document.getElementById('threat-' + id);
-            const allPopups = document.querySelectorAll('.threat-popup');
-            
-            allPopups.forEach(p => {
-                if (p.id !== 'threat-' + id) {
-                    p.classList.remove('show');
-                }
-            });
-            
-            popup.classList.toggle('show');
         }
-
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.threat-tooltip')) {
-                document.querySelectorAll('.threat-popup').forEach(popup => {
-                    popup.classList.remove('show');
-                });
-            }
-        });
-
-        function exportThreatReport() {
-                window.location.href = "/download_report";
-        }
-
-        function showScanForm() {
-            document.getElementById('scanForm').style.display = 'block';
-        }
-    </script>
-</body>
-</html>
+    });
+</script>
+{% endblock %}

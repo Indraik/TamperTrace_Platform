@@ -1,5 +1,16 @@
+import sys
 from twilio.rest import Client as TwilioClient
 from config import Config
+
+def _safe_log(msg):
+    """Safely log messages to stdout without crashing on Windows cp1252 character encodings."""
+    try:
+        print(msg)
+    except Exception:
+        try:
+            print(msg.encode(sys.stdout.encoding or "ascii", errors="replace").decode(sys.stdout.encoding or "ascii"))
+        except Exception:
+            pass
 
 class WhatsAppClient:
     """External WhatsApp integration using Twilio REST API."""
@@ -11,12 +22,12 @@ class WhatsAppClient:
         token = Config.TWILIO_AUTH_TOKEN
 
         if not sid or not token:
-            print("⚠️ Twilio credentials missing in configuration. Skipping WhatsApp.")
+            _safe_log("⚠️ Twilio credentials missing in configuration. Skipping WhatsApp.")
             return False
 
         recipient = to_number or Config.ADMIN_WHATSAPP
         if not recipient:
-            print("⚠️ No recipient phone number configured for WhatsApp.")
+            _safe_log("⚠️ No recipient phone number configured for WhatsApp.")
             return False
 
         try:
@@ -31,8 +42,8 @@ class WhatsAppClient:
                     "Please review your admin dashboard immediately."
                 )
             )
-            print(f"📲 WhatsApp alert sent successfully → SID: {message.sid}")
+            _safe_log(f"📲 WhatsApp alert sent successfully -> SID: {message.sid}")
             return True
         except Exception as e:
-            print(f"❌ WhatsApp alert failed: {e}")
+            _safe_log(f"❌ WhatsApp alert failed: {e}")
             return False
